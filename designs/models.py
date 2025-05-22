@@ -1,39 +1,13 @@
 from django.db import models
 from django.conf import settings
-from decimal import Decimal, ROUND_HALF_UP
-from datetime import datetime
-
-
-
-# Helper function for design_num
-def generate_design_num():
-    from django.db.models import Max
-    year = datetime.now().year
-    prefix = f"MS{year}"
-    last_design = Design.objects.filter(design_num__startswith=prefix).aggregate(
-        Max('design_num')
-    )['design_num__max']
-
-    if last_design:
-        last_num = int(last_design[-4:])
-        next_num = last_num + 1
-    else:
-        next_num = 1
-
-    return f"{prefix}{next_num:04d}"
+from . import design_services
 
 # Design model
 class Design(models.Model):
-    STATUS_CHOICES = [
-        ('p', 'Pending'),
-        ('a', 'Assigned'),
-        ('i', 'In Progress'),
-        ('s', 'Sent'),
-        ('a', 'Approved'),
-        ('o', 'Ordered'),
-    ]
-
+    created_at = models.DateTimeField(auto_now_add=True)
     design_num = models.CharField(max_length=20, unique=True, editable=False)
+    revision_letter = models.CharField(max_length=1, blank=True, null=True)
+    parent_design = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='revisions')
     customer = models.ForeignKey('customers.Customer', on_delete=models.PROTECT, related_name='customer_designs')
     requesting_rep = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='rep_requests')
     designer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='designer_designs')
@@ -45,7 +19,7 @@ class Design(models.Model):
     blank_size = models.CharField(max_length=100)
     test = models.CharField(max_length=100)
     flute = models.CharField(max_length=100)
-    paper = models.TextField()
+    paper = models.CharField(max_length=50)
     ard_required = models.BooleanField(default=False)
     pdf_required = models.BooleanField(default=False)
     eps_required = models.BooleanField(default=False)
@@ -54,25 +28,12 @@ class Design(models.Model):
     samples_required = models.BooleanField(default=False)
     num_samples_requested = models.PositiveIntegerField(default=0)
     notes = models.TextField(blank=True, null=True)
-    # assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='assigned_designs')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='p')
-    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=design_services.STATUS_CHOICES, default='p')
+    status_updated_at = models.DateTimeField(auto_now_add=True)
+    
 
-    # Rounding rule for decimals upon save
     def save(self, *args, **kwargs):
-        def round4(val):
-            return Decimal(val).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
-
-        if self.length is not None:
-            self.length = round4(self.length)
-        if self.width is not None:
-            self.width = round4(self.width)
-        if self.depth is not None:
-            self.depth = round4(self.depth)
-
-        if not self.design_num:
-            self.design_num = generate_design_num()
-
+        design_services.prepare_design_for_save(self)
         super().save(*args, **kwargs)
 
     def __str__(self):

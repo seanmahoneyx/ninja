@@ -4,11 +4,12 @@
             <table class="table table-zebra table-pin-rows">
                 <thead>
                     <tr>
-                        <th>Status<th>
+                        <th>Request Date</th>
                         <th>Design#</th>
                         <th>Customer</th>
                         <th>Ident</th>
-                        <th>Assigned To</th>
+                        <th>Designer</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -16,11 +17,12 @@
                 <tbody>
                     {% for design in designs %}
                         <tr>
-                            <td>{{ design.status }}</td>
+                            <td>{{ design.created_at|date:"m/d/Y h:i A" }}</td>
                             <td>{{ design.design_num }}</td>
                             <td>{{ design.customer }}</td>
                             <td>{{ design.ident }}</td>
-                            <td>{{ design.assigned_to }}</td>
+                            <td>{{ design.designer }}</td>
+                            <td>{{ design.get_status_display }}</td>
                             <td>
                                 <button class="btn btn-xs btn-error">Delete</button>
                             </td>
