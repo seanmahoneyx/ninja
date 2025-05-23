@@ -1,7 +1,6 @@
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 from django.db.models import Max
-from django.utils import timezone
 
 STATUS_CHOICES = [
         ('p', 'Pending'),
@@ -58,15 +57,10 @@ def get_next_revision_letter(parent_design):
     return next_letter
 
 
-def prepare_design_for_save(instance: 'Design'):
-    """
-    Handles all logic needed before saving a Design instance:
-    - Rounds measurements
-    - Generates design number
-    - Handles revision suffixes
-    - Updates status timestamp
-    """
+def prepare_design_for_save(instance):
     from .models import Design
+    from django.utils import timezone
+
     # Round measurements
     if instance.length is not None:
         instance.length = round_to_4_places(instance.length)
@@ -75,7 +69,7 @@ def prepare_design_for_save(instance: 'Design'):
     if instance.depth is not None:
         instance.depth = round_to_4_places(instance.depth)
 
-    # Handle new design
+    # Handle new design number and revisions
     if not instance.design_num:
         if instance.parent_design:
             # It's a revision
@@ -84,6 +78,16 @@ def prepare_design_for_save(instance: 'Design'):
         else:
             # Base design
             instance.design_num = generate_design_num()
+
+    # Set design_num_index for sorting
+    # For base designs like "MS20250007" → extract last 4 digits
+    # For revisions like "MS20250007_A" → extract from base part only
+
+    base_num_part = instance.design_num.split('_')[0]  # "MS20250007"
+    try:
+        instance.design_num_index = int(base_num_part[-4:])
+    except (ValueError, IndexError):
+        instance.design_num_index = 0  # fallback if something unexpected
 
     # Track status update time
     if instance.pk:

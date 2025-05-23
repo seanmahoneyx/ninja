@@ -6,6 +6,7 @@ from . import design_services
 class Design(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     design_num = models.CharField(max_length=20, unique=True, editable=False)
+    design_num_index = models.IntegerField(default=0, editable=False)
     revision_letter = models.CharField(max_length=1, blank=True, null=True)
     parent_design = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='revisions')
     customer = models.ForeignKey('customers.Customer', on_delete=models.PROTECT, related_name='customer_designs')
@@ -42,7 +43,7 @@ class Design(models.Model):
 # DesignAttachment model (for multiple file uploads)
 class DesignAttachment(models.Model):
     design = models.ForeignKey(Design, on_delete=models.CASCADE, related_name='attachments')
-    file = models.FileField(upload_to='design_attachments/')
+    file = models.FileField(upload_to='designs/design_attachments/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
