@@ -16,7 +16,7 @@ class Design(models.Model):
     length = models.DecimalField(max_digits=10, decimal_places=4)
     width = models.DecimalField(max_digits=10, decimal_places=4)
     depth = models.DecimalField(max_digits=10, decimal_places=4)
-    blank_size = models.CharField(max_length=100)
+    blank_size = models.CharField(max_length=100, null=True)
     test = models.CharField(max_length=100)
     flute = models.CharField(max_length=100)
     paper = models.CharField(max_length=50)
