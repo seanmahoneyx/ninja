@@ -42,6 +42,9 @@ def create_design(request):
         design.requesting_rep = request.user
         design.save()
 
+        for f in request.FILES.getlist('attachments'):
+            DesignAttachment.objects.create(design=design, file=f)
+
         context = {'design': design}
         response = render(request, 'partials/design-row.html', context)
         response['HX-Trigger'] = 'design-success'

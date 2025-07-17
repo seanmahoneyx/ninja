@@ -5,7 +5,9 @@
         <h3 class="font-bold text-lg mb-4">Add New Design</h3>
         
         
-        <form hx-post="{% url 'create-design' %}"
+        <form 
+            enctype="multipart/form-data"
+            hx-post="{% url 'create-design' %}"
             hx-target="#design-table-body"
             hx-swap="afterbegin"
             hx-on:design-success="design_modal.close(); this.reset();" 
@@ -32,6 +34,13 @@
                     {% endif %}
                 </div>
             {% endfor %}
+
+            <div class="form-control w-full mb-4">
+                <label class="label">
+                    <span class="label-text">Attachments</span>
+                </label>
+                <input type="file" name="attachments" multiple class="file-input-bordered w-full"/>
+            </div>
 
             <div class="mt-4">
                 <button type="button" class="btn" onclick="design_modal.close()">Cancel</button>
