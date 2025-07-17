@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import Design
+from .models import Design, DesignAttachment
+from django.views.decorators.http import require_http_methods
 
 from designs.forms import DesignForm
 
@@ -31,3 +32,19 @@ def search_designs(request):
         'partials/design-list.html',
         {'designs': designs}
     )
+
+@login_required
+@require_http_methods(['POST'])
+def create_design(request):
+    form = DesignForm(request.POST)
+    if form.is_valid():
+        design = form.save(commit=False)
+        design.requesting_rep = request.user
+        design.save()
+
+        context = {'design': design}
+        response = render(request, 'partials/design-row.html', context)
+        response['HX-Trigger'] = 'design-success'
+        return response
+    
+    return render(request, 'partials/design-form.html', {'form': form})

@@ -1,0 +1,21 @@
+<tr>
+    <td>{{ design.created_at|date:"m/d/Y h:i A" }}</td>
+    <td>{{ design.design_num }}</td>
+    <td>{{ design.customer }}</td>
+    <td>{{ design.ident }}</td>
+    <td>{{ design.designer }}</td>
+    <td>{{ design.get_status_display }}</td>
+    <td class="flex items-center gap-1">
+    {% with count=design.attachments.count %}
+        {% if count > 0 %}
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828L18 10.828a4 4 0 10-5.656-5.656L6.343 11.172a6 6 0 108.485 8.485L20 14" />
+            </svg>
+            <span class="text-sm text-gray-700">{{ count }}</span>
+        {% endif %}
+    {% endwith %}
+    </td>
+    <td>
+        <button class="btn btn-xs btn-error">Delete</button>
+    </td>
+</tr>

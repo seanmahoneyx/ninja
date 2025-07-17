@@ -1,9 +1,11 @@
 from django import forms
 from .models import Design
+from customers.models import Customer
 
 class DesignForm(forms.ModelForm):
-    customer = forms.CharField(
-        widget=forms.TextInput(attrs={
+    customer = forms.ModelChoiceField(
+        queryset=Customer.objects.all(),
+        widget=forms.Select(attrs={
             'class': 'input input-bordered w-full',
             'placeholder': 'Customer'
         })
@@ -106,7 +108,7 @@ class DesignForm(forms.ModelForm):
             'placeholder': 'Notes'
         })
     )
-    
+
     
     class Meta:
         model = Design
